@@ -32,4 +32,22 @@ class DataProvider {
             }
         });
     }
+
+    async getClusters(serverName?: string): Promise<ClustersList[]> {
+        return new Promise((resolve, reject) => {
+            const clustersListUpdateFunc = (clusters: ClustersList[]) => resolve(clusters);
+            const tornjakMessageFunc = (message: string) => {
+                console.log("Message from TornjakApi:", message);
+                if (message !== "OK" && message !== "No Content") {
+                    reject(new Error(message));
+                }
+            };
+
+            if (IsManager && serverName) {
+                this.api.populateClustersUpdate(serverName, clustersListUpdateFunc, tornjakMessageFunc);
+            } else {
+                this.api.populateLocalClustersUpdate(clustersListUpdateFunc, tornjakMessageFunc);
+            }
+        });
+    }
 }
