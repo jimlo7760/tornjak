@@ -68,4 +68,22 @@ class DataProvider {
             }
         });
     }
+
+    async getTornjakServerInfo(serverName?: string): Promise<TornjakServerInfo> {
+        return new Promise((resolve, reject) => {
+            const tornjakServerInfoUpdateFunc = (serverInfo: TornjakServerInfo) => resolve(serverInfo);
+            const tornjakMessageFunc = (message: string) => {
+                console.log("Message from TornjakApi:", message);
+                if (message !== "OK" && message !== "No Content") {
+                    reject(new Error(message));
+                }
+            };
+
+            if (IsManager && serverName) {
+                this.api.populateTornjakServerInfo(serverName, tornjakServerInfoUpdateFunc, tornjakMessageFunc);
+            } else {
+                this.api.populateLocalTornjakServerInfo(tornjakServerInfoUpdateFunc, tornjakMessageFunc);
+            }
+        });
+    }
 }
