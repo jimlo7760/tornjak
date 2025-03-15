@@ -86,4 +86,16 @@ class DataProvider {
             }
         });
     }
+
+    async getAgentWorkloadAttestorInfo(serverName?: string, inputData?: string): Promise<AgentsWorkLoadAttestorInfo[]> {
+        return new Promise((resolve, reject) => {
+            const agentworkloadSelectorInfoFunc = (info: AgentsWorkLoadAttestorInfo[]) => resolve(info);
+            if (IsManager && serverName) {
+                this.api.populateTornjakAgentInfo(serverName, agentworkloadSelectorInfoFunc, inputData || "");
+            } else {
+                this.api.populateLocalTornjakAgentInfo(agentworkloadSelectorInfoFunc, inputData || "");
+            }
+        });
+    }
+
 }
