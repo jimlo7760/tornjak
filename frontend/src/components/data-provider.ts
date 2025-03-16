@@ -98,4 +98,19 @@ class DataProvider {
         });
     }
 
+    async registerSelectors(serverName: string, wLoadAttdata: { spiffeid: string; plugin: string; }): Promise<void> {
+        return new Promise((resolve, reject) => {
+            const refreshSelectorsState = (serverName: string, agentworkloadSelectorInfoFunc: (globalAgentsWorkLoadAttestorInfo: AgentsWorkLoadAttestorInfo[]) => void) => {
+                this.api.refreshSelectorsState(serverName, agentworkloadSelectorInfoFunc);
+            };
+            const agentworkloadSelectorInfoFunc = (info: AgentsWorkLoadAttestorInfo[]) => resolve();
+            if (IsManager && serverName) {
+                this.api.registerSelectors(serverName, wLoadAttdata, refreshSelectorsState, agentworkloadSelectorInfoFunc);
+            } else {
+                this.api.registerLocalSelectors(wLoadAttdata, this.api.refreshLocalSelectorsState, agentworkloadSelectorInfoFunc);
+            }
+        });
+    }
 }
+
+export default new DataProvider();
