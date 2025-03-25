@@ -37,6 +37,7 @@ export interface UserRolesAction extends Action<typeof GLOBAL_USER_ROLES> {
 // agents
 export const GLOBAL_AGENTS_LIST = 'GLOBAL_AGENTS_LIST';
 export const GLOBAL_AGENTS_WORKLOADATTESTOR_INFO = 'GLOBAL_AGENTS_WORKLOADATTESTOR_INFO'
+export const AGENTS_LIST_UPDATE = 'AGENTS_LIST_UPDATE'; // Add this line
 
 export interface AgentsReducerState {
     globalAgentsList: AgentsList[],

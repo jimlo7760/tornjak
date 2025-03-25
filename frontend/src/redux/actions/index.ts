@@ -1,6 +1,8 @@
 import { ThunkAction } from 'redux-thunk';
 import { RootState } from 'redux/reducers';
+import DataProvider from '../../components/data-provider';
 import {
+    AGENTS_LIST_UPDATE,
     GLOBAL_IS_AUTHENTICATED,
     GLOBAL_ACCESS_TOKEN,
     GLOBAL_USER_ROLES,
@@ -60,6 +62,21 @@ import {
     SpireHealthCheckFreq,
     DebugServerInfo, FederationsList
 } from 'components/types';
+
+export const agentsListUpdateFunc = (serverName?: string) => {
+    return async (dispatch: any) => {
+        try {
+            const agents = await DataProvider.getAgents(serverName);
+            dispatch({
+                type: AGENTS_LIST_UPDATE,
+                payload: agents,
+            });
+        } catch (error) {
+            console.error("Failed to fetch agents:", error);
+            // Handle error appropriately
+        }
+    };
+};
 
 // Expected input - spire debug server info
 // spireDebugServerInfoUpdateFunc returns the debug server info

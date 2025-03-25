@@ -16,7 +16,6 @@ const AgentList: React.FC<AgentListProps> = ({ serverName }) => {
         setAgents(agentsData);
       } catch (error) {
         console.error("Failed to fetch agents:", error);
-        // Handle error appropriately
       }
     };
 
