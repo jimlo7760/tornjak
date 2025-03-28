@@ -23,13 +23,13 @@ const AgentList: React.FC<AgentListProps> = ({ serverName }) => {
   }, [serverName]);
 
   return (
-      <div className="agent-list">
-        {agents.map(agent => (
-            <div key={agent.id.path} className="agent-item">
-              {agent.id.path}
-            </div>
+
+      {agents.map(agent => (
+
+            {agent.id.path}
+
         ))}
-      </div>
+
   );
 };
 
