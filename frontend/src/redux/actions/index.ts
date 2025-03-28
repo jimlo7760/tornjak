@@ -63,20 +63,6 @@ import {
     DebugServerInfo, FederationsList
 } from 'components/types';
 
-export const agentsListUpdateFunc = (serverName?: string) => {
-    return async (dispatch: any) => {
-        try {
-            const agents = await DataProvider.getAgents(serverName);
-            dispatch({
-                type: AGENTS_LIST_UPDATE,
-                payload: agents,
-            });
-        } catch (error) {
-            console.error("Failed to fetch agents:", error);
-            // Handle error appropriately
-        }
-    };
-};
 
 // Expected input - spire debug server info
 // spireDebugServerInfoUpdateFunc returns the debug server info
@@ -327,14 +313,20 @@ export function entryExpiryUpdateFunc(globalEntryExpiryTime: number): ThunkActio
 // Expected input - List of agents with their info
 // json representation from SPIFFE golang documentation - https://github.com/spiffe/spire/blob/v0.12.0/proto/spire/types/agent.pb.go#L28-L45
 // agentsListUpdateFunc returns the list of agents with their info
-export function agentsListUpdateFunc(globalAgentsList: AgentsList[]): ThunkAction<void, RootState, undefined, AgentsListAction> {
-    return dispatch => {
-        dispatch({
-            type: GLOBAL_AGENTS_LIST,
-            payload: globalAgentsList
-        });
-    }
-}
+export const agentsListUpdateFunc = (serverName?: string) => {
+    return async (dispatch: any) => {
+        try {
+            const agents = await DataProvider.getAgents(serverName);
+            dispatch({
+                type: AGENTS_LIST_UPDATE,
+                payload: agents,
+            });
+        } catch (error) {
+            console.error("Failed to fetch agents:", error);
+            // Handle error appropriately
+        }
+    };
+};
 
 // Expected input - List of federations with their info
 // federationsListUpdateFunc returns the list of federations with their info
