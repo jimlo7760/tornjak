@@ -3,6 +3,7 @@ import { RootState } from 'redux/reducers';
 import DataProvider from '../../components/data-provider';
 import {
     AGENTS_LIST_UPDATE,
+    CLUSTER_LIST_UPDATE,
     GLOBAL_IS_AUTHENTICATED,
     GLOBAL_ACCESS_TOKEN,
     GLOBAL_USER_ROLES,
@@ -144,11 +145,16 @@ export function UserRolesUpdateFunc(globalUserRoles: string[]): ThunkAction<void
 // Expected input - List of clusters with their info
 // clustersListUpdateFunc returns the list of clusters with their info
 export function clustersListUpdateFunc(globalClustersList: ClustersList[]): ThunkAction<void, RootState, undefined, ClustersListUpdateAction> {
-    return dispatch => {
-        dispatch({
-            type: GLOBAL_CLUSTERS_LIST,
-            payload: globalClustersList
-        });
+    return async (dispatch: any) => {
+        try{
+            const clusters = await DataProvider.getClusters();
+            dispatch({
+                type: GLOBAL_CLUSTERS_LIST,
+                payload: globalClustersList
+            });
+        } catch (error) {
+            console.error("Failed to fetch clusters:", error);
+        }
     }
 }
 
@@ -323,7 +329,6 @@ export const agentsListUpdateFunc = (serverName?: string) => {
             });
         } catch (error) {
             console.error("Failed to fetch agents:", error);
-            // Handle error appropriately
         }
     };
 };
