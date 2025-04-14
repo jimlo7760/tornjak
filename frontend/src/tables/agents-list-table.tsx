@@ -87,51 +87,36 @@ class AgentsListTable extends React.Component<AgentsListTableProp, AgentsListTab
         })
     }
 
-    deleteAgent(selectedRows: readonly DenormalizedRow[]) {
-        var id: { path: string; trust_domain: string }[] = [], endpoint = "", prefix = "spiffe://";
-        let promises = [];
+    async deleteAgent(selectedRows: readonly DenormalizedRow[]) {
+        if (!selectedRows || selectedRows.length === 0) return;
 
-        if (IsManager) {
-            endpoint = GetApiServerUri('/manager-api/agent/delete') + "/" + this.props.globalServerSelected;
+        let promises = selectedRows.map(async row => {
+            const trust_domain = row.cells[1].value;
+            const prefix = "spiffe://";
+            const path = row.cells[2].value.substr(trust_domain.concat(prefix).length);
+            const agentId = { path: path, trust_domain: trust_domain };
 
-        } else {
-            endpoint = GetApiServerUri(apiEndpoints.spireAgentsApi);
-        }
-
-        if (selectedRows !== undefined && selectedRows.length !== 0) {
-            for (let i = 0; i < selectedRows.length; i++) {
-                id[i] = { "path": "", "trust_domain": "" }
-                id[i]["trust_domain"] = selectedRows[i].cells[1].value;
-                id[i]["path"] = selectedRows[i].cells[2].value.substr(selectedRows[i].cells[1].value.concat(prefix).length);
-                promises.push(axios.delete(endpoint, {
-                    data: {
-                        "id": {
-                            "trust_domain": id[i].trust_domain,
-                            "path": id[i].path,
-                        }
-                    },
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    crossdomain: true
-                }));
+            try {
+                await deleteAgent(agentId, this.props.globalServerSelected);
+                return agentId;
+            } catch (error) {
+                showResponseToast(error, { caption: "Could not delete agent." });
+                return null;
             }
-        } else {
-            return "";
+        });
+
+        const results = await Promise.all(promises);
+        const deletedAgentIds = results.filter(agentId => agentId !== null) as { path: string; trust_domain: string }[];
+
+        if (deletedAgentIds.length > 0) {
+            const updatedAgentsList = this.props.globalAgentsList.filter(agent =>
+                !deletedAgentIds.some(deletedAgentId =>
+                    agent.id.trust_domain !== deletedAgentId.trust_domain || agent.id.path !== deletedAgentId.path
+                )
+            );
+            this.props.agentsListUpdateFunc(updatedAgentsList);
+            window.alert(`Agents deleted successfully!`);
         }
-        Promise.all(promises)
-            .then(responses => {
-                if (this.props.globalAgentsList === undefined) {
-                    return
-                }
-                for (let i = 0; i < responses.length; i++) {
-                    this.props.agentsListUpdateFunc(this.props.globalAgentsList.filter(el =>
-                        el.id.trust_domain !== id[i].trust_domain ||
-                        el.id.path !== id[i].path));
-                }
-                window.alert(`Agents deleted successfully!`);
-            })
-            .catch((error) => showResponseToast(error, { caption: "Could not delete agent." }))
     }
 
     banAgent(selectedRows: readonly DenormalizedRow[]) {
