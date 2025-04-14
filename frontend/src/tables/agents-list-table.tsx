@@ -1,17 +1,16 @@
 import React from "react";
 import { connect } from 'react-redux';
-import GetApiServerUri from 'components/helpers';
-import IsManager from 'components/is_manager';
-import axios from 'axios';
 import {
-    agentsListUpdateFunc
+    agentsListUpdateFunc,
+    getAgentsList
 } from 'redux/actions';
 import Table from './list-table';
 import { AgentsList, AgentsWorkLoadAttestorInfo } from "components/types";
 import { DenormalizedRow } from "carbon-components-react";
 import { RootState } from "redux/reducers";
 import { showResponseToast } from "components/error-api";
-import apiEndpoints from 'components/apiConfig';
+import { deleteAgent, banAgent } from 'services/dataService';
+import IsManager from "components/is_manager";
 
 // AgentListTable takes in 
 // listTableData: agents data to be rendered on table
@@ -31,7 +30,8 @@ type AgentsListTableProp = {
         key: string,
         props: { agent: AgentsList }
     }[] | string | JSX.Element[],
-    id: string
+    id: string,
+    getAgentsList: (serverSelected?: string) => void,
 }
 
 type AgentsListTableState = {
@@ -51,10 +51,11 @@ class AgentsListTable extends React.Component<AgentsListTableProp, AgentsListTab
     }
 
     componentDidMount() {
+        this.props.getAgentsList(this.props.globalServerSelected);
         this.prepareTableData();
     }
     componentDidUpdate(prevProps: AgentsListTableProp) {
-        if (prevProps !== this.props) {
+        if (prevProps.globalAgentsList !== this.props.globalAgentsList || prevProps.globalServerSelected !== this.props.globalServerSelected) {
             this.setState({
                 listData: this.props.globalAgentsList
             })
@@ -62,31 +63,25 @@ class AgentsListTable extends React.Component<AgentsListTableProp, AgentsListTab
         }
     }
 
+
     prepareTableData() {
-        const { data } = this.props;
-        let listData: { props: { agent: AgentsList; }; }[] | ({ key: string; props: { agent: AgentsList; }; } | JSX.Element)[] = [];
-        if (typeof (data) === "string" || data === undefined)
-            return
-        data.forEach(val => listData.push(Object.assign({}, val)));
+        const { globalAgentsList } = this.props;
         let listtabledata: { id: string, [x: string]: string; }[] = [];
-        for (let i = 0; i < listData.length; i++) {
-            listtabledata[i] = { "id": "" };
-            listtabledata[i]["id"] = (i + 1).toString();
-            listtabledata[i]["trustdomain"] = listData[i].props.agent.id.trust_domain;
-            listtabledata[i]["spiffeid"] = "spiffe://" + listData[i].props.agent.id.trust_domain + listData[i].props.agent.id.path;
-            listtabledata[i]["info"] = JSON.stringify(listData[i].props.agent, null, ' ');
-            if (this.props.globalAgentsWorkLoadAttestorInfo !== undefined) {
-                var check_id = this.props.globalAgentsWorkLoadAttestorInfo.filter(agent => (agent.spiffeid) === listtabledata[i].spiffeid);
-                if (check_id.length !== 0) {
-                    listtabledata[i]["plugin"] = check_id[0].plugin;
-                }
-                else {
-                    listtabledata[i]["plugin"] = "No Plugin Configured For Agent";
-                }
-            } else {
-                listtabledata[i]["plugin"] = "No Plugin Configured For Agent";
-            }
+
+        if (globalAgentsList) {
+            listtabledata = globalAgentsList.map((agent, i) => {
+                const spiffeid = `spiffe://${agent.id.trust_domain}${agent.id.path}`;
+                const plugin = this.props.globalAgentsWorkLoadAttestorInfo?.find(item => item.spiffeid === spiffeid)?.plugin || "No Plugin Configured For Agent";
+                return {
+                    "id": (i + 1).toString(),
+                    "trustdomain": agent.id.trust_domain,
+                    "spiffeid": spiffeid,
+                    "info": JSON.stringify(agent, null, ' '),
+                    "plugin": plugin,
+                };
+            });
         }
+
         this.setState({
             listTableData: listtabledata
         })
