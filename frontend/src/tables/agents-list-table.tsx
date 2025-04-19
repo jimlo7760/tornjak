@@ -120,29 +120,22 @@ class AgentsListTable extends React.Component<AgentsListTableProp, AgentsListTab
     }
 
     banAgent(selectedRows: readonly DenormalizedRow[]) {
-        var id: { path: string; trust_domain: string }[] = [], i = 0, endpoint = "", prefix = "spiffe://"
+        if (!selectedRows || selectedRows.length === 0) return;
 
-        if (IsManager) {
-            endpoint = GetApiServerUri('/manager-api/agent/ban') + "/" + this.props.globalServerSelected
+        selectedRows.forEach(async row => {
+            const trust_domain = row.cells[1].value;
+            const prefix = "spiffe://";
+            const path = row.cells[2].value.substr(trust_domain.concat(prefix).length);
+            const agentId = { path: path, trust_domain: trust_domain };
 
-        } else {
-            endpoint = GetApiServerUri(apiEndpoints.spireAgentsBanApi)
-        }
-
-        if (selectedRows === undefined || !selectedRows) return ""
-
-        for (i = 0; i < selectedRows.length; i++) {
-            id[i] = { path: "", trust_domain: "" }
-            id[i].trust_domain = selectedRows[i].cells[1].value
-            id[i].path = selectedRows[i].cells[2].value.substr(selectedRows[i].cells[1].value.concat(prefix).length)
-
-            axios.post(endpoint, { id: { trust_domain: id[i].trust_domain, path: id[i].path } })
-                .then(res => {
-                    alert("Ban SUCCESS")
-                    this.componentDidMount()
-                })
-                .catch((error) => showResponseToast(error, { caption: "Could not ban agent." }))
-        }
+            try {
+                await banAgent(agentId, this.props.globalServerSelected);
+                alert("Ban SUCCESS");
+                this.props.getAgentsList(this.props.globalServerSelected); // Refresh the agent list
+            } catch (error) {
+                showResponseToast(error, { caption: "Could not ban agent." });
+            }
+        });
     }
     render() {
         const { listTableData } = this.state;
