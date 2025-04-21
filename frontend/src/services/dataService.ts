@@ -18,3 +18,8 @@ const fetchData = async (endpoint: string, isManager: boolean, serverSelected?: 
         throw error;
     }
 };
+
+export const fetchAgents = async (serverSelected?: string) => {
+    const endpoint = IsManager ? '/manager-api/agent/list' : apiEndpoints.spireAgentsApi;
+    return fetchData(endpoint, IsManager, serverSelected);
+};
