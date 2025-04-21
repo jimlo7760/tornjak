@@ -23,3 +23,23 @@ export const fetchAgents = async (serverSelected?: string) => {
     const endpoint = IsManager ? '/manager-api/agent/list' : apiEndpoints.spireAgentsApi;
     return fetchData(endpoint, IsManager, serverSelected);
 };
+
+
+export const deleteAgent = async (agentId: { path: string; trust_domain: string }, serverSelected?: string) => {
+    let endpoint = IsManager ? GetApiServerUri('/manager-api/agent/delete') + "/" + serverSelected : GetApiServerUri(apiEndpoints.spireAgentsApi);
+    try {
+        const response = await axios.delete(endpoint, {
+            data: {
+                "id": agentId
+            },
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            crossdomain: true
+        });
+        return response.data;
+    } catch (error) {
+        console.error("Error deleting agent:", error);
+        throw error;
+    }
+};
