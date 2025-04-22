@@ -43,3 +43,14 @@ export const deleteAgent = async (agentId: { path: string; trust_domain: string 
         throw error;
     }
 };
+
+export const banAgent = async (agentId: { path: string; trust_domain: string }, serverSelected?: string) => {
+    let endpoint = IsManager ? GetApiServerUri('/manager-api/agent/ban') + "/" + serverSelected : GetApiServerUri(apiEndpoints.spireAgentsBanApi);
+    try {
+        const response = await axios.post(endpoint, { id: agentId });
+        return response.data;
+    } catch (error) {
+        console.error("Error banning agent:", error);
+        throw error;
+    }
+};
