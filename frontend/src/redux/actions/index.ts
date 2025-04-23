@@ -144,14 +144,14 @@ export function UserRolesUpdateFunc(globalUserRoles: string[]): ThunkAction<void
 
 // Expected input - List of clusters with their info
 // clustersListUpdateFunc returns the list of clusters with their info
-export function clustersListUpdateFunc(globalClustersList: ClustersList[]): ThunkAction<void, RootState, undefined, ClustersListUpdateAction> {
+export function clustersListUpdateFunc = (serverName?: string) => {
     return async (dispatch: any) => {
         try{
-            const clusters = await DataProvider.getClusters();
+            const clusters = await DataProvider.getClusters(serverName);
             dispatch({
-                type: GLOBAL_CLUSTERS_LIST,
-                payload: globalClustersList
-            });
+                type: CLUSTER_LIST_UPDATE,
+                payload: clusters,
+            } as ClustersListUpdateAction);
         } catch (error) {
             console.error("Failed to fetch clusters:", error);
         }
